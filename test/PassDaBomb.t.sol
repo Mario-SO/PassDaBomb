@@ -2,22 +2,30 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
-import "../src/Counter.sol";
+import "../src/PassDaBomb.sol";
 
-contract CounterTest is Test {
-    Counter public counter;
+contract PassDaBombTest is Test {
+    PassDaBomb passDaBomb;
+
     function setUp() public {
-       counter = new Counter();
-       counter.setNumber(0);
+        passDaBomb = new PassDaBomb();
     }
 
-    function testIncrement() public {
-        counter.increment();
-        assertEq(counter.number(), 1);
+    function test_transferDaBomb() public {
+        passDaBomb.transferDaBomb(address(this));
+        assert.equal(
+            passDaBomb.daBombs[0].currentHolder,
+            address(this),
+            "current holder should be this contract"
+        );
     }
 
-    function testSetNumber(uint256 x) public {
-        counter.setNumber(x);
-        assertEq(counter.number(), x);
+    function test_defuseDaBomb() public {
+        passDaBomb.defuseDaBomb{value: 0.1 ether}();
+        assert.equal(
+            passDaBomb.daBombs(0).currentHolder,
+            address(0),
+            "current holder should be 0x0"
+        );
     }
 }
