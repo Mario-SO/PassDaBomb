@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-contract PassDaBomb {
+// import reentrancy guard
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+// import onlyowner
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+contract PassDaBomb is Ownable, ReentrancyGuard {
     uint256 BOMB_COUNTDOWN = block.timestamp + 24 hours;
 
     address public currentHolder;
@@ -37,7 +42,7 @@ contract PassDaBomb {
         emit BombPassed(newHolder, msg.sender);
     }
 
-    function defuseDaBomb() public payable {
+    function defuseDaBomb() public payable nonReentrant {
         require(
             msg.value >= 0.1 ether,
             "You need to pay 0.1 ether to defuse the bomb"
@@ -60,7 +65,7 @@ contract PassDaBomb {
         );
     }
 
-    // Getters
+    // Getter functions
     function getPreviousHolders() public view returns (address[] memory) {
         return previousHolders;
     }
@@ -76,4 +81,11 @@ contract PassDaBomb {
     function getPreviousHoldersCount() public view returns (uint256) {
         return previousHolders.length;
     }
+
+    // OnlyOwner functions
+    function withdraw() public payable onlyOwner nonReentrant {
+        (bool os, ) = payable(owner()).call{value: address(this).balance}("");
+        require(os);
+    }
+
 }
